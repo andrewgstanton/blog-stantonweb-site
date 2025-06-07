@@ -18,7 +18,7 @@ RELAY_URLS = [
 ]
 
 TAGS_TO_INCLUDE = {"blog", "article"}
-OUTPUT_DIR = "articles"
+OUTPUT_DIR = "docs/articles"
 
 def fetch_nostr_events():
     from nostr.relay_manager import RelayManager
