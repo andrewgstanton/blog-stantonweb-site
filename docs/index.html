@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Andrew G. Stanton – Blog</title>
+</head>
+<body>
+  <h1>Latest Articles</h1>
+  <div id="articles"></div>
+  <footer>
+    <p style="font-size: 0.85em; color: #777;">
+      Powered by <a href="https://nostr.com" target="_blank">Nostr</a> + <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a><br>
+      Content licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a>
+    </p>
+  </footer>
+  <script>
+    fetch('./articles/index.json')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('articles');
+        data.forEach(article => {
+          const link = document.createElement('a');
+          link.href = '/articles/' + article.slug + '/';
+          link.textContent = article.title + ' (' + article.date + ')';
+          container.appendChild(link);
+          container.appendChild(document.createElement('br'));
+        });
+      });
+  </script>
+</body>
+</html>
