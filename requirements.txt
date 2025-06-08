@@ -1,0 +1,6 @@
+markdown
+requests
+Websockets
+python-slugify
+nostr
+Bech32

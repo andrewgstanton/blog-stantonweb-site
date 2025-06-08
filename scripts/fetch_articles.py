@@ -1,90 +1,89 @@
-import os
+import asyncio
+import uuid
+import websockets
 import json
-import requests
-import markdown
-from nostr.event import Event
-from nostr.relay_manager import RelayManager
-from nostr.message_type import ClientMessageType
-from nostr.filter import Filter
-from nostr.key import PublicKey
-from datetime import datetime
-from slugify import slugify
+import os
+from utils import decode_npub
 
-PUBKEY = "d9bc66c6d509d4c988c35c11b247ec6dbace4e5a51e7fa5dc16c8cf0a1107a20"  # Replace with hex of your npub
+print("Current working dir:", os.getcwd())
+print("Articles will be saved to:", os.path.join(os.getcwd(), "docs/articles"))
+
+os.makedirs("articles", exist_ok=True)
+
+input_key = os.getenv("PUBKEY", "").strip()
+
+if not input_key:
+    print("Error: PUBKEY environment variable is required.", file=sys.stderr)
+    sys.exit(1)
+
+print("Current PUBKEY", input_key)
+
+try:
+    pubkey_hex = decode_npub(input_key) if input_key.startswith("npub") else input_key
+except Exception as e:
+    print(f"Invalid PUBKEY: {e}", file=sys.stderr)
+    sys.exit(1)
+
+print("Current PUBKEY (hex):", pubkey_hex)
+
 RELAY_URLS = [
+    "wss://relay.primal.net",
     "wss://relay.damus.io",
     "wss://nos.lol",
-    "wss://relay.snort.social"
+    "wss://relay.snort.social",
+    "wss://purplepag.es",
+    "wss://premium.primal.net",
+    "wss://nostr.mom",
+    "wss://relay.nostr.band",
+    "wss://nostr.at"
 ]
 
-TAGS_TO_INCLUDE = {"blog", "article"}
-OUTPUT_DIR = "docs/articles"
+async def fetch_from_relay(url, pubkey_hex):
+    articles = []
+    try:
+        print("feching from relay:", url)
+        async with websockets.connect(url) as ws:
+            sub_id = str(uuid.uuid4())
+            await ws.send(json.dumps(["REQ", sub_id, {
+                "kinds": [30023],
+                "authors": [pubkey_hex]
+            }]))
+            while True:
+                try:
+                    msg = json.loads(await asyncio.wait_for(ws.recv(), timeout=5))
+                    if msg[0] == "EVENT" and msg[1] == sub_id:
+                        articles.append(msg[2])
+                    elif msg[0] == "EOSE":
+                        break
+                except asyncio.TimeoutError:
+                    break
+    except Exception as e:
+        print(f"[{url}] Failed: {e}")
+    return articles
 
-def fetch_nostr_events():
-    from nostr.relay_manager import RelayManager
-    from nostr.filter import Filter
-    from nostr.event import Event
-    from nostr.message_type import ClientMessageType
-    import time
+# Filter by tag: only keep if tag "t" has "blog" or "article"
+def has_blog_or_article_tag(event):
+    tags = event.get("tags", [])
+    return any(tag[0] == "t" and tag[1] in ("blog", "article") for tag in tags)
 
-    manager = RelayManager()
-    for url in RELAY_URLS:
-        manager.add_relay(url)
-    manager.open_connections()
-    time.sleep(1)
+async def fetch_all_articles():
+    tasks = [fetch_from_relay(url, pubkey_hex) for url in RELAY_URLS]
+    results = await asyncio.gather(*tasks)
+    all_articles = [item for sublist in results for item in sublist]
+    print(f"Fetched {len(all_articles)} total articles (including duplicates)")
 
-    flt = Filter(authors=[PUBKEY], kinds=[30023], limit=20)
-    manager.add_subscription("blog-sub", [flt])
-    manager.publish_message(ClientMessageType.REQUEST, "blog-sub", [flt])
-    time.sleep(3)
+    # Deduplicate using event ID
+    unique_articles = {}
+    for article in all_articles:
+        unique_articles[article['id']] = article  # overwrite dupes
 
-    events = manager.message_pool.get_events()
-    manager.close_connections()
-    return events
+    deduped_articles = list(unique_articles.values())
+    print(f"After deduplication: {len(deduped_articles)} unique articles")
 
-def extract_article_data(event):
-    tags = {tag[0]: tag[1] for tag in event.tags if len(tag) > 1}
-    taglist = [tag[1].lower() for tag in event.tags if tag[0] == "t"]
-    if not any(t in TAGS_TO_INCLUDE for t in taglist):
-        return None
-    title = tags.get("title")
-    if not title:
-        return None
-    slug = slugify(title)
-    content = markdown.markdown(event.content)
-    dt = datetime.fromtimestamp(event.created_at).strftime("%Y-%m-%d")
-    return {
-        "title": title,
-        "slug": slug,
-        "content": content,
-        "date": dt,
-        "event_id": event.id
-    }
+    filtered_articles = [ev for ev in deduped_articles if has_blog_or_article_tag(ev)]
+    print(f"Filtered down to {len(filtered_articles)} articles tagged with 'blog' or 'article'")
 
-def write_articles(articles):
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    index = []
-    for article in articles:
-        path = Path(OUTPUT_DIR) / article["slug"]
-        path.mkdir(parents=True, exist_ok=True)
-        html = f"""<html><body>
-        <h1>{article['title']}</h1>
-        <p><em>{article['date']}</em></p>
-        {article['content']}
-        <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p></footer>
-        </body></html>"""
-        with open(path / "index.html", "w", encoding="utf-8") as f:
-            f.write(html)
-        index.append({"title": article["title"], "slug": article["slug"], "date": article["date"]})
-    with open(Path(OUTPUT_DIR) / "index.json", "w", encoding="utf-8") as f:
-        json.dump(index[:10], f, indent=2)
+    return filtered_articles    
 
 if __name__ == "__main__":
-    events = fetch_nostr_events()
-    articles = []
-    for e in events:
-        a = extract_article_data(e)
-        if a:
-            articles.append(a)
-    articles = sorted(articles, key=lambda x: x["date"], reverse=True)[:10]
-    write_articles(articles)
+    asyncio.run(fetch_all_articles())
