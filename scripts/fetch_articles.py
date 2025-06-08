@@ -1,9 +1,16 @@
-import asyncio
-import uuid
-import websockets
-import json
 import os
+import json
+import time
+import uuid
+import markdown
+import asyncio
+import websockets
 from utils import decode_npub
+from datetime import datetime
+from slugify import slugify
+from pathlib import Path
+
+OUTPUT_DIR = "docs/articles"
 
 print("Current working dir:", os.getcwd())
 print("Articles will be saved to:", os.path.join(os.getcwd(), "docs/articles"))
@@ -66,6 +73,79 @@ def has_blog_or_article_tag(event):
     tags = event.get("tags", [])
     return any(tag[0] == "t" and tag[1] in ("blog", "article") for tag in tags)
 
+def extract_article_data(event):
+    print("=== RAW EVENT ===")
+    print(json.dumps(event, indent=2))  # event is a dict
+
+    tags = {tag[0]: tag[1] for tag in event.get("tags", []) if len(tag) > 1}
+    taglist = [tag[1].lower() for tag in event.get("tags", []) if tag[0] == "t"]
+
+    title = tags.get("title")
+    if not title:
+        print(f"Skipping event {event.get('id', 'UNKNOWN')} — no title tag")
+        return None
+
+    slug = slugify(title)
+    summary = tags.get("summary", "")
+    image_url = tags.get("image", "")
+    content = markdown.markdown(event.get("content", ""))
+    dt = datetime.fromtimestamp(event.get("created_at")).strftime("%Y-%m-%d")
+
+
+    print(f"Fetched {len(event)} events")
+
+    return {
+        "title": title,
+        "slug": slug,
+        "summary": summary,
+        "image": image_url,
+        "tags": taglist,
+        "content": content,
+        "date": dt,
+        "timestamp": event.get("created_at"),
+        "event_id": event.get("id")
+    }
+
+def write_articles(articles):
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    index = []
+
+    for article in articles:
+        path = Path(OUTPUT_DIR) / article["slug"]
+        path.mkdir(parents=True, exist_ok=True)
+
+        tags_html = (
+            "<ul style='list-style: none; padding-left: 0;'>"
+            + "".join(f"<li style='display:inline; margin-right:8px;'>#{tag}</li>" for tag in article["tags"])
+            + "</ul>"
+            if article["tags"] else ""
+        )
+
+        hero_image_html = (
+            f"<img src='{article['image']}' alt='Hero image' style='max-width: 100%; margin-bottom: 20px;'/>"
+            if article["image"] else ""
+        )
+
+        summary_html = f"<p><strong>{article['summary']}</strong></p>" if article["summary"] else ""
+
+        html = f"""<html><body>
+        <h1>{article['title']}</h1>
+        <p><em>{article['date']}</em></p>
+        {hero_image_html}
+        {summary_html}
+        {tags_html}
+        {article['content']}
+        <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p></footer>
+        </body></html>"""
+
+        with open(path / "index.html", "w", encoding="utf-8") as f:
+            f.write(html)
+
+        index.append({"title": article["title"], "slug": article["slug"], "date": article["date"]})
+
+    with open(Path(OUTPUT_DIR) / "index.json", "w", encoding="utf-8") as f:
+        json.dump(index[:10], f, indent=2)
+
 async def fetch_all_articles():
     tasks = [fetch_from_relay(url, pubkey_hex) for url in RELAY_URLS]
     results = await asyncio.gather(*tasks)
@@ -86,4 +166,16 @@ async def fetch_all_articles():
     return filtered_articles    
 
 if __name__ == "__main__":
-    asyncio.run(fetch_all_articles())
+    articles_raw = asyncio.run(fetch_all_articles())
+
+    articles = []
+    for event in articles_raw:
+        try:
+            a = extract_article_data(event)
+            if a:
+                articles.append(a)
+        except Exception as e:
+            print(f"Error processing article: {e}")
+
+    articles = sorted(articles, key=lambda x: x["date"], reverse=True)[:10]
+    write_articles(articles)
