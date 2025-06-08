@@ -74,8 +74,8 @@ def has_blog_or_article_tag(event):
     return any(tag[0] == "t" and tag[1] in ("blog", "article") for tag in tags)
 
 def extract_article_data(event):
-    print("=== RAW EVENT ===")
-    print(json.dumps(event, indent=2))  # event is a dict
+    # print("=== RAW EVENT ===")
+    # print(json.dumps(event, indent=2))  # event is a dict
 
     tags = {tag[0]: tag[1] for tag in event.get("tags", []) if len(tag) > 1}
     taglist = [tag[1].lower() for tag in event.get("tags", []) if tag[0] == "t"]
@@ -90,9 +90,6 @@ def extract_article_data(event):
     image_url = tags.get("image", "")
     content = markdown.markdown(event.get("content", ""))
     dt = datetime.fromtimestamp(event.get("created_at")).strftime("%Y-%m-%d")
-
-
-    print(f"Fetched {len(event)} events")
 
     return {
         "title": title,
