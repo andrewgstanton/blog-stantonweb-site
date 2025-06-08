@@ -1,0 +1,36 @@
+name: Fetch and Build Articles
+
+on:
+  schedule:
+    - cron: '0 13 * * *'  # runs daily at 6am PST (13:00 UTC)
+  workflow_dispatch:     # allows manual triggering via GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install requirements
+        run: pip install -r requirements.txt
+
+      - name: Run fetch script
+        env:
+          PUBKEY: ${{ secrets.PUBKEY }}
+        run: |
+          python scripts/fetch_articles.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add docs/articles
+          git add docs/articles/index.json
+          git commit -m "Auto-update articles"
+          git push
