@@ -20,7 +20,7 @@
         const container = document.getElementById('articles');
         data.forEach(article => {
           const link = document.createElement('a');
-          link.href = '/articles/' + article.slug + '/';
+          link.href = './articles/' + article.slug + '/';
           link.textContent = article.title + ' (' + article.date + ')';
           container.appendChild(link);
           container.appendChild(document.createElement('br'));
