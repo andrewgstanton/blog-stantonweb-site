@@ -1,12 +1,17 @@
 [
   {
-    "title": "Something Is Alive Here @ Bitcoin 2025",
-    "slug": "something-is-alive-here-bitcoin-2025",
-    "date": "2025-06-08"
+    "title": "How I Built a Decentralized CMS with Nostr + GitHub Actions",
+    "slug": "how-i-built-a-decentralized-cms-with-nostr-github-actions",
+    "date": "2025-06-09"
   },
   {
     "title": "First Test Article",
     "slug": "first-test-article",
+    "date": "2025-06-08"
+  },
+  {
+    "title": "Something Is Alive Here @ Bitcoin 2025",
+    "slug": "something-is-alive-here-bitcoin-2025",
     "date": "2025-06-08"
   }
 ]

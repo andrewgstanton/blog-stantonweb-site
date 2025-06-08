@@ -4,3 +4,4 @@ Websockets
 python-slugify
 nostr
 Bech32
+pytz

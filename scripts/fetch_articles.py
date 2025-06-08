@@ -1,5 +1,6 @@
 import os
 import json
+import pytz
 import time
 import uuid
 import markdown
@@ -9,6 +10,9 @@ from utils import decode_npub
 from datetime import datetime
 from slugify import slugify
 from pathlib import Path
+
+# set time zone
+pst = pytz.timezone("US/Pacific")
 
 OUTPUT_DIR = "docs/articles"
 
@@ -88,9 +92,13 @@ def extract_article_data(event):
     slug = slugify(title)
     summary = tags.get("summary", "")
     image_url = tags.get("image", "")
-    content = markdown.markdown(event.get("content", ""))
+    content = markdown.markdown(event["content"].replace("\\n", "\n").replace("\\", ""))
     dt = datetime.fromtimestamp(event.get("created_at")).strftime("%Y-%m-%d")
-
+    published_at_ts = int(tags.get("published_at", event.get("created_at")))
+    created_at_ts = event.get("created_at")
+    published_date = datetime.fromtimestamp(published_at_ts, tz=pst).strftime("%B %d, %Y at %I:%M %p %Z")
+    updated_date = datetime.fromtimestamp(created_at_ts, tz=pst).strftime("%B %d, %Y at %I:%M %p %Z")
+    
     return {
         "title": title,
         "slug": slug,
@@ -99,7 +107,10 @@ def extract_article_data(event):
         "tags": taglist,
         "content": content,
         "date": dt,
-        "timestamp": event.get("created_at"),
+        "timestamp": created_at_ts,
+        "published_at": published_at_ts,
+        "published_date": published_date,
+        "updated_date": updated_date,
         "event_id": event.get("id")
     }
 
@@ -112,9 +123,9 @@ def write_articles(articles):
         path.mkdir(parents=True, exist_ok=True)
 
         tags_html = (
-            "<ul style='list-style: none; padding-left: 0;'>"
-            + "".join(f"<li style='display:inline; margin-right:8px;'>#{tag}</li>" for tag in article["tags"])
-            + "</ul>"
+            "<div class='tags'>"
+            + "".join(f"<span class='tag'>#{tag}</span>" for tag in article["tags"])
+            + "</div>"
             if article["tags"] else ""
         )
 
@@ -126,13 +137,28 @@ def write_articles(articles):
         summary_html = f"<p><strong>{article['summary']}</strong></p>" if article["summary"] else ""
 
         html = f"""<html><body>
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8" />
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                        <title>Stanton Web Applications  - Blog</title>
+                        <link rel="stylesheet" href="../../styles/styles.css" />
+                    </head>
+                    <body>
+                        <h2><div class="site-title">Stanton Web Applications - Blog</div></h2>
+                        <div class="site-subtitle">Decentralized.  Sovereign. Free. </div>
+                <div class="container">
         <h1>{article['title']}</h1>
-        <p><em>{article['date']}</em></p>
+        <p><em>Published: {article['published_date']} &nbsp; | &nbsp; Updated: {article['updated_date']}</em></p>
         {hero_image_html}
         {summary_html}
         {tags_html}
         {article['content']}
-        <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p></footer>
+        </div>
+        <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p><br />
+                 &copy; 1999–2025 Blog - Stanton Web Applications. All rights reserved. 
+        </footer>
         </body></html>"""
 
         with open(path / "index.html", "w", encoding="utf-8") as f:
@@ -174,5 +200,5 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error processing article: {e}")
 
-    articles = sorted(articles, key=lambda x: x["date"], reverse=True)[:10]
+    articles = sorted(articles, key=lambda x: x["published_at"], reverse=True)[:10]
     write_articles(articles)

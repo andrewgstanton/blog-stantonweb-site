@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Andrew G. Stanton – Blog</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stanton Web Applications  - Blog</title>
+  <link rel="stylesheet" href="styles/styles.css" />
 </head>
 <body>
-  <h1>Latest Articles</h1>
-  <div id="articles"></div>
-  <footer>
-    <p style="font-size: 0.85em; color: #777;">
-      Powered by <a href="https://nostr.com" target="_blank">Nostr</a> + <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a><br>
-      Content licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a>
-    </p>
-  </footer>
+  <h2><div class="site-title">Stanton Web Applications - Blog</div></h2>
+  <div class="site-subtitle">Decentralized.  Sovereign. Free. </div>
+  <div class="container">
+    <h1>Latest Articles</h1>
+    <div id="articles"></div>
+    <footer>
+      <p style="font-size: 0.85em; color: #777;">
+        Powered by <a href="https://nostr.com" target="_blank">Nostr</a> + <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a><br>
+        Content licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a> <br /> <br />
+         &copy; 1999–2025 Blog - Stanton Web Applications. All rights reserved. 
+      </p>
+    </footer>
+  </div>  
   <script>
     fetch('./articles/index.json')
       .then(response => response.json())

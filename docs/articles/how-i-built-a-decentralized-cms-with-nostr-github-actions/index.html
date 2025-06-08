@@ -1,0 +1,100 @@
+<html><body>
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8" />
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                        <title>Stanton Web Applications  - Blog</title>
+                        <link rel="stylesheet" href="../../styles/styles.css" />
+                    </head>
+                    <body>
+                        <h2><div class="site-title">Stanton Web Applications - Blog</div></h2>
+                        <div class="site-subtitle">Decentralized.  Sovereign. Free. </div>
+                <div class="container">
+        <h1>How I Built a Decentralized CMS with Nostr + GitHub Actions</h1>
+        <p><em>Published: June 08, 2025 at 08:45 PM PDT &nbsp; | &nbsp; Updated: June 08, 2025 at 08:49 PM PDT</em></p>
+        <img src='https://blossom.primal.net/dc2bd8c9d7cd0d1788545c14e5e18c66787db77f4570da6e56978498ead04bdb.png' alt='Hero image' style='max-width: 100%; margin-bottom: 20px;'/>
+        <p><strong>This article walks through how I built a fully decentralized blog using Nostr as the backend CMS, GitHub Actions for automation, and GitHub Pages for free global hosting. No servers, no logins — just sovereign publishing on open protocols.</strong></p>
+        <div class='tags'><span class='tag'>#blog</span><span class='tag'>#article</span><span class='tag'>#nostr</span><span class='tag'>#cms</span><span class='tag'>#decentralized web</span><span class='tag'>#github actions</span><span class='tag'>#github pages</span><span class='tag'>#bitcoin</span><span class='tag'>#open source</span><span class='tag'>#permissionless</span><span class='tag'>#proof of work</span><span class='tag'>#blogging</span><span class='tag'>#</span></div>
+        <h2><strong>How I Built a Decentralized CMS with Nostr + GitHub Actions</strong></h2>
+<p>🧡 <em>My first post on a fully sovereign blog.</em></p>
+<h3>Introduction</h3>
+<p>This blog post isn’t hosted on Medium, Substack, or WordPress.
+It doesn’t live on a database I don’t control.
+There’s no login, no admin panel, no SaaS dashboard.</p>
+<p>Instead, this post was published as a Nostr event —
+stored on dozens of relays,
+fetched with open-source scripts,
+rendered as a static HTML file,
+and served globally via GitHub Pages.</p>
+<p>And it all runs without a single server I have to manage.</p>
+<p>Let me show you how it works — and why this matters.</p>
+<hr />
+<h3>Step 1: Writing on Nostr</h3>
+<p>I use <a href="https://primal.net">Primal.net</a> to write my articles.
+Their long-form editor lets you add titles, summaries, and tags to a special kind of Nostr event (<code>30023</code>).
+You just click publish — and the article propagates across the Nostr network.</p>
+<h3>Step 2: Fetching Events</h3>
+<p>On my GitHub repo, I maintain a script called <code>fetch_articles.py</code>.
+It connects to multiple Nostr relays (like <code>relay.damus.io</code>, <code>relay.primal.net</code>, <code>nostr.mom</code>, etc.) and fetches any articles I've written using my public key.
+Only posts tagged with <code>blog</code> or <code>article</code> are kept.</p>
+<p>Each article is:</p>
+<ul>
+<li>
+<p>Deduplicated</p>
+</li>
+<li>
+<p>Parsed for title, summary, image, tags, and content</p>
+</li>
+<li>
+<p>Converted from Markdown to clean HTML</p>
+</li>
+<li>
+<p>Saved in a static folder</p>
+</li>
+</ul>
+<h3>Step 3: Hosting with GitHub Pages</h3>
+<p>The output goes straight into the <code>docs/</code> folder of my public GitHub repository.
+Thanks to GitHub Pages, the site is instantly deployed as a static website.</p>
+<p>The homepage (<code>index.html</code>) uses JavaScript to read <code>articles/index.json</code> and display the 10 most recent blog posts — each linking to its full static HTML page.</p>
+<h3>Step 4: Fully Automated via GitHub Actions</h3>
+<p>To keep things fresh, I created a GitHub Action called <code>Fetch and Build Articles</code>.
+It runs daily — or whenever I trigger it manually — and fetches new content from Nostr, updates the site, and redeploys everything.</p>
+<p>No databases.
+No plugins.
+No backend headaches.
+Just content — and the open protocols that carry it.</p>
+<hr />
+<h3>Why This Matters</h3>
+<p>Most blogs are brittle.
+Lose your password, your server, or your platform — and your voice disappears.</p>
+<p>This setup flips that on its head:</p>
+<ul>
+<li>
+<p><strong>I own my content</strong> — It's stored on a public, censorship-resistant network.</p>
+</li>
+<li>
+<p><strong>Anyone can verify it</strong> — The data lives on Nostr relays, signed with my pubkey.</p>
+</li>
+<li>
+<p><strong>It costs nothing to host</strong> — GitHub Pages serves everything statically.</p>
+</li>
+<li>
+<p><strong>It’s future-proof</strong> — If GitHub disappeared, I could mirror the repo anywhere.</p>
+</li>
+</ul>
+<p>This is what publishing <em>should</em> look like in 2025.</p>
+<hr />
+<h3>Want to Build Your Own?</h3>
+<p>You can fork the repo I use <a href="https://github.com/andrewgstanton/blog-stantonweb-site">here</a> —
+or read the code and set it up for your own Nostr pubkey.</p>
+<p>If you’re not on Nostr yet, you can find me at:
+🧬 <code>npub19wvckp8z58lxs4djuz43pwujka6tthaq77yjd3axttsgppnj0ersgdguvd</code></p>
+<p>This is just the beginning.
+One post, one block, one step at a time —
+on our own terms.</p>
+        </div>
+        <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p><br />
+                 &copy; 1999–2025 Blog - Stanton Web Applications. All rights reserved. 
+        </footer>
+        </body></html>

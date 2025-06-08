@@ -1,12 +1,12 @@
-#/bin/bash
+#!/bin/bash
 
-echo "Stopping all running containers..."
-docker stop $(docker ps -aq) 2>/dev/null
+echo "🛑 Stopping all running containers..."
+docker ps -q | xargs -r docker stop
 
-echo "Removing all containers..."
-docker rm $(docker ps -aq) 2>/dev/null
+echo "🧹 Removing all containers..."
+docker ps -aq | xargs -r docker rm
 
-echo "Removing all images..."
-docker rmi $(docker images -q) 2>/dev/null
+echo "🧼 Removing all images..."
+docker images -q | xargs -r docker rmi -f
 
-echo "Docker cleanup complete."
+echo "✅ Docker cleanup complete."
