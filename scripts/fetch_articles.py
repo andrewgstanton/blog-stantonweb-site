@@ -164,7 +164,7 @@ def write_articles(articles):
         with open(path / "index.html", "w", encoding="utf-8") as f:
             f.write(html)
 
-        index.append({"title": article["title"], "slug": article["slug"], "date": article["date"]})
+        index.append({"title": article["title"], "slug": article["slug"], "date": article["published_date"]})
 
     with open(Path(OUTPUT_DIR) / "index.json", "w", encoding="utf-8") as f:
         json.dump(index[:10], f, indent=2)
