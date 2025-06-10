@@ -2,7 +2,7 @@ name: Fetch and Build Articles
 
 on:
   schedule:
-    - cron: '0 13 * * *'  # Runs daily at 6:00 AM PST (13:00 UTC)
+    - cron: '*/10 * * * *'  # Runs every 10 mmin
   workflow_dispatch:      # Allows manual triggering from GitHub UI
 
 jobs:
