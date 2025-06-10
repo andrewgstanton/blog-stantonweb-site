@@ -1,0 +1,177 @@
+<html><body>
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8" />
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                        <title>Stanton Web Applications  - Blog</title>
+                        <link rel="stylesheet" href="../../styles/styles.css" />
+                    </head>
+                    <body>
+                        <h2><div class="site-title">Stanton Web Applications - Blog</div></h2>
+                        <div class="site-subtitle">Decentralized.  Sovereign. Free. </div>
+                <div class="container">
+        <h1>How I Built a Decentralized CMS with Nostr + GitHub Actions — Part 2</h1>
+        <p><em>Published: June 09, 2025 at 05:13 PM PDT &nbsp; | &nbsp; Updated: June 09, 2025 at 05:13 PM PDT</em></p>
+        <img src='https://blossom.primal.net/337c50b5cb05273f95f1eae0d20d5c476507e63b3e8560788cad252fcf69380b.png' alt='Hero image' style='max-width: 100%; margin-bottom: 20px;'/>
+        <p><strong>Refinements, resilience, and real-world usage. In this follow-up to Part 1, I document how I styled and streamlined my Nostr-based CMS — including relay deduplication, HTML fixes, GitHub Actions automation, and thoughtful publishing defaults — all running on free infrastructure I control.
+
+</strong></p>
+        <div class='tags'><span class='tag'>#nostr</span><span class='tag'>#blog</span><span class='tag'>#article</span><span class='tag'>#decentralizedcms</span><span class='tag'>#freedomtech</span><span class='tag'>#githubactions</span><span class='tag'>#sovereignsignal</span><span class='tag'>#proofofpublish</span></div>
+        <h1>How I Built a Decentralized CMS with Nostr + GitHub Actions – Part 2</h1>
+<p><em>Refinements, resilience, and real-world publishing</em></p>
+<hr />
+<p>In <a href="https://andrewgstanton.github.io/blog-stantonweb-site/articles/how-i-built-a-decentralized-cms-with-nostr-github-actions/">Part 1</a>, I shared the first steps of building a publishing stack that puts authors in control — using <a href="https://nostr.com/">Nostr</a> for content, GitHub Actions for automation, and GitHub Pages for free, fast hosting.</p>
+<p>But that was just the foundation.</p>
+<p>In this second installment, I focused on improving the system with better <strong>data hygiene</strong>, <strong>styling consistency</strong>, and <strong>end-to-end automation</strong> — all while keeping things minimal and open-source.</p>
+<p>Here’s what changed — and what’s coming next.</p>
+<hr />
+<h2>✅ Key Improvements (Week of June 8)</h2>
+<h3>🔁 1. Deduplication across relays</h3>
+<p>Nostr relays often echo the same events. In the original version, my script could pull the same article multiple times.
+To fix that, I updated the <code>fetch_articles.py</code> script to:</p>
+<ul>
+<li>
+<p>Gather events from 8–10 relays concurrently using <code>asyncio</code></p>
+</li>
+<li>
+<p>Flatten the results</p>
+</li>
+<li>
+<p>Deduplicate based on <code>event.id</code></p>
+</li>
+</ul>
+<p>This brought the number of unique articles down from 90+ to around 20 — a huge cleanup win.</p>
+<hr />
+<h3>🏷 2. Tag styling and wrapping</h3>
+<p>Previously, the tags were unstyled or ran off the edge of the container. Now:</p>
+<ul>
+<li>
+<p>Tags wrap cleanly and align left</p>
+</li>
+<li>
+<p>Each tag has a soft background and spacing (<code>#tag</code>)</p>
+</li>
+<li>
+<p>Tags are parsed directly from Nostr <code>["t", ...]</code> tags</p>
+</li>
+</ul>
+<p>It looks better. It feels more coherent. And it reflects the decentralized ethos — clean, not corporate.</p>
+<hr />
+<h3>📅 3. Proper <code>published_at</code> parsing</h3>
+<p>Nostr events can include a <code>["published_at", timestamp]</code> tag. Originally, my site sorted and displayed articles by their <code>created_at</code> time — which was sometimes misleading.</p>
+<p>Now, the script:</p>
+<ul>
+<li>
+<p>Extracts <code>published_at</code> (if present)</p>
+</li>
+<li>
+<p>Falls back to <code>created_at</code> if missing</p>
+</li>
+<li>
+<p>Uses this value for both sorting and display in <code>index.html</code></p>
+</li>
+</ul>
+<p>This way, articles appear in the correct order — based on when I <em>intended</em> to publish them.</p>
+<hr />
+<h3>🎨 4. Markdown cleanup and layout polish</h3>
+<p>Markdown content from Nostr sometimes included extra backslashes (``) or unparsed characters. I updated the rendering logic to:</p>
+<ul>
+<li>
+<p>Remove unnecessary escape characters</p>
+</li>
+<li>
+<p>Use consistent fonts, spacing, and margins</p>
+</li>
+<li>
+<p>Inherit the overall styling from stantonweb.com</p>
+</li>
+</ul>
+<p>Now the articles don’t just work — they feel native to the rest of my site.</p>
+<hr />
+<h3>🤖 5. GitHub Actions automation</h3>
+<p>This was a big one: enabling <strong>daily auto-publishing</strong>.</p>
+<p>I created a GitHub Actions workflow that:</p>
+<ul>
+<li>
+<p>Pulls all my <code>kind:30023</code> long-form articles daily from Nostr relays</p>
+</li>
+<li>
+<p>Deduplicates and filters by tag</p>
+</li>
+<li>
+<p>Generates one <code>.html</code> file per article and updates the <code>index.json</code></p>
+</li>
+<li>
+<p>Commits the changes back to GitHub Pages — no manual pushing needed</p>
+</li>
+</ul>
+<p>After some token setup troubleshooting (and a wrong <code>known_hosts</code> key 😅), it works beautifully.</p>
+<p>You can still run the script manually via:</p>
+<p><code>bash</code></p>
+<p>CopyEdit</p>
+<p><code>./fetch_articles.sh</code></p>
+<p>But now, it’s fire-and-forget. Just post on Nostr — the rest happens automatically.</p>
+<hr />
+<h2>⏱ Total Time Spent (est. 15 hours)</h2>
+<ul>
+<li>
+<p><strong>Saturday (~5h)</strong>: initial build, tried sync-based fetch logic</p>
+</li>
+<li>
+<p><strong>Sunday (~5h)</strong>: rewrote with <code>asyncio</code>, deduplication, cleaned up article objects</p>
+</li>
+<li>
+<p><strong>Monday (~5h)</strong>: full styling pass, timestamp fixes, token creation, and automation pipeline setup</p>
+</li>
+</ul>
+<p>All running with zero paid infrastructure.</p>
+<hr />
+<h2>🔜 Coming Soon</h2>
+<ul>
+<li>
+<p>🗂 <strong>Pagination</strong>: View 10–50 articles per page</p>
+</li>
+<li>
+<p>🗓 <strong>Monthly Archives</strong>: Top-level by Year → then Month → then article list</p>
+</li>
+<li>
+<p>🧠 <strong>RSS Feed</strong>: Auto-generate RSS from my <code>npub</code> so any Nostr long-form post becomes a blog feed
+  <em>(Bonus: use it to follow others via Primal or standard readers)</em></p>
+</li>
+</ul>
+<hr />
+<h2>🙌 Built With</h2>
+<ul>
+<li>
+<p>Nostr (Primal, Damus, etc.)</p>
+</li>
+<li>
+<p>GitHub Pages + Actions</p>
+</li>
+<li>
+<p>Python (asyncio, websockets)</p>
+</li>
+<li>
+<p>A little stubbornness</p>
+</li>
+<li>
+<p>A lot of help from ChatGPT (“Dr. C”) 🧠</p>
+</li>
+</ul>
+<hr />
+<h2>💡 Why This Matters</h2>
+<p>Most people don’t own their publishing tools.
+Medium can unlist you. Substack can shadowban. Even Ghost requires trust in a hosted instance.</p>
+<p>But with Nostr + GitHub, I control the data, the visibility, and the publishing logic.</p>
+<p>That’s the future I want — for myself, for others, for truth.</p>
+<p>One article at a time.</p>
+<hr />
+<p><strong>🟧 View live:</strong>
+<a href="https://andrewgstanton.github.io/blog-stantonweb-site">https://andrewgstanton.github.io/blog-stantonweb-site</a>
+<strong>📬 Zap:</strong> <a href="https://tinyurl.com/yuyu2b9t">https://tinyurl.com/yuyu2b9t</a></p>
+        </div>
+        <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p><br />
+                 &copy; 1999–2025 Blog - Stanton Web Applications. All rights reserved. 
+        </footer>
+        </body></html>
