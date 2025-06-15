@@ -76,42 +76,43 @@
       </br></p>
 </footer>
 </div>
-  <script>
-    fetch('./articles/index.json')
-      .then(response => response.json())
-      .then(data => {
-        const container = document.getElementById('articles');
-        data.slice(0, 10).forEach(article => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'article';
+<script>
+  fetch('./articles/index.json')
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('articles');
+      data.slice(0, 10).forEach(article => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'article';
 
-          const titleLine = document.createElement('div');
-          const title = document.createElement('a');
-          title.className = 'article-title';
-          title.href = './articles/' + article.slug + '/';
-          title.textContent = article.title;
+        const titleWrapper = document.createElement('div');
+        titleWrapper.style.display = 'flex';
+        titleWrapper.style.alignItems = 'center';
+        titleWrapper.style.gap = '8px'; // spacing between title and tooltip
 
-          const tooltip = document.createElement('span');
-          tooltip.className = 'tooltip';
-          tooltip.textContent = 'ℹ';
+        const title = document.createElement('a');
+        title.className = 'article-title';
+        title.href = './articles/' + article.slug + '/';
+        title.textContent = article.title;
 
-          const tooltipText = document.createElement('span');
-          tooltipText.className = 'tooltiptext';
-          tooltipText.textContent = article.original_url || 'Original link not available';
+        const tooltip = document.createElement('span');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = 'i';
+        tooltip.title = article.original_url || 'Original post';
 
-          tooltip.appendChild(tooltipText);
-          titleLine.appendChild(title);
-          titleLine.appendChild(tooltip);
+        titleWrapper.appendChild(title);
+        titleWrapper.appendChild(tooltip);
 
-          const meta = document.createElement('div');
-          meta.className = 'article-meta';
-          meta.textContent = article.date;
+        const meta = document.createElement('div');
+        meta.className = 'article-meta';
+        meta.textContent = article.date;
 
-          wrapper.appendChild(titleLine);
-          wrapper.appendChild(meta);
-          container.appendChild(wrapper);
-        });
+        wrapper.appendChild(titleWrapper);
+        wrapper.appendChild(meta);
+        container.appendChild(wrapper);
       });
-  </script>
+    });
+</script>
+
 </body>
 </html>
