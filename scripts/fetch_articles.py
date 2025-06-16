@@ -6,7 +6,7 @@ import uuid
 import markdown
 import asyncio
 import websockets
-from utils import decode_npub
+from utils import decode_npub, generate_link, shorten_url
 from datetime import datetime
 from slugify import slugify
 from pathlib import Path
@@ -98,6 +98,12 @@ def extract_article_data(event):
     created_at_ts = event.get("created_at")
     published_date = datetime.fromtimestamp(published_at_ts, tz=pst).strftime("%B %d, %Y at %I:%M %p %Z")
     updated_date = datetime.fromtimestamp(created_at_ts, tz=pst).strftime("%B %d, %Y at %I:%M %p %Z")
+    event_id = event.get("id")
+
+    # Use helper to generate and shorten original_url
+    raw_url = generate_link(event_id)
+    original_url = shorten_url(raw_url)
+
     
     return {
         "title": title,
@@ -111,7 +117,8 @@ def extract_article_data(event):
         "published_at": published_at_ts,
         "published_date": published_date,
         "updated_date": updated_date,
-        "event_id": event.get("id")
+        "event_id": event_id,
+        "original_url": original_url
     }
 
 def write_articles(articles):
@@ -155,16 +162,24 @@ def write_articles(articles):
         {summary_html}
         {tags_html}
         {article['content']}
-        </div>
+        <p style="font-size: 0.8em; color: #777;">
+            Original post: <a href="{article['original_url']}" target="_blank">{article['original_url']}</a>
+        </p>
         <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p><br />
                  &copy; 1999–2025 Blog - Stanton Web Applications. All rights reserved. 
         </footer>
+        </div>
         </body></html>"""
 
         with open(path / "index.html", "w", encoding="utf-8") as f:
             f.write(html)
 
-        index.append({"title": article["title"], "slug": article["slug"], "date": article["published_date"]})
+        index.append({
+            "title": article["title"],
+            "slug": article["slug"],
+            "date": article["published_date"],
+            "original_url": article["original_url"]
+        })
 
     with open(Path(OUTPUT_DIR) / "index.json", "w", encoding="utf-8") as f:
         json.dump(index[:10], f, indent=2)
