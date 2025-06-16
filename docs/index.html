@@ -96,17 +96,17 @@
         title.href = './articles/' + article.slug + '/';
         title.textContent = article.title;
 
-        const tooltip = document.createElement('span');
-        tooltip.className = 'tooltip';
-        tooltip.textContent = '↗';
+        const originalLink = document.createElement('a');
+        originalLink.href = article.original_url || '#';
+        originalLink.target = '_blank';
+        originalLink.rel = 'noopener noreferrer';
+        originalLink.title = article.original_url || 'Original post not available';
+        originalLink.textContent = '↗';
+        originalLink.style.textDecoration = 'none';
+        originalLink.style.fontSize = '0.85em';
 
-        const tooltipText = document.createElement('span');
-        tooltipText.className = 'tooltiptext';
-        tooltipText.textContent = article.original_url || 'Original post not available';
-
-        tooltip.appendChild(tooltipText);
         titleWrapper.appendChild(title);
-        titleWrapper.appendChild(tooltip);
+        titleWrapper.appendChild(originalLink);
 
         const meta = document.createElement('div');
         meta.className = 'article-meta';
