@@ -76,6 +76,7 @@
       </br></p>
 </footer>
 </div>
+
 <script>
   fetch('./articles/index.json')
     .then(response => response.json())
@@ -88,7 +89,7 @@
         const titleWrapper = document.createElement('div');
         titleWrapper.style.display = 'flex';
         titleWrapper.style.alignItems = 'center';
-        titleWrapper.style.gap = '8px'; // spacing between title and tooltip
+        titleWrapper.style.gap = '8px';
 
         const title = document.createElement('a');
         title.className = 'article-title';
@@ -98,8 +99,12 @@
         const tooltip = document.createElement('span');
         tooltip.className = 'tooltip';
         tooltip.textContent = '↗';
-        tooltip.title = article.original_url || 'Original post not available';
 
+        const tooltipText = document.createElement('span');
+        tooltipText.className = 'tooltiptext';
+        tooltipText.textContent = article.original_url || 'Original post not available';
+
+        tooltip.appendChild(tooltipText);
         titleWrapper.appendChild(title);
         titleWrapper.appendChild(tooltip);
 
