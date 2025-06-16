@@ -165,9 +165,15 @@ def write_articles(articles):
         <p style="font-size: 0.8em; color: #777;">
             Original post: <a href="{article['original_url']}" target="_blank">{article['original_url']}</a>
         </p>
-        <footer><p style='font-size: 0.85em; color: #777;'>Powered by <a href='https://nostr.com'>Nostr</a> + <a href='https://github.com/features/actions'>GitHub Actions</a></p><br />
-                 &copy; 1999–2025 Blog - Stanton Web Applications. All rights reserved. 
+
+        <footer>
+            <p style="font-size: 0.85em; color: #777;">
+            Powered by <a href="https://nostr.com" target="_blank">Nostr</a> + <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a><br/>
+            Content licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a> <br> <br/>
+                © 1999–2025 Blog - Stanton Web Applications. All rights reserved. 
+            </br></p>
         </footer>
+        
         </div>
         </body></html>"""
 
